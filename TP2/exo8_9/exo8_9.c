@@ -1,11 +1,11 @@
-#include <stdio.h> // Bibliothèque standard du C utilisée pour les opérations d'entrée/sortie
-#include <stdlib.h> // Bibliothèque standard du C utilisée pour la gestion de la mémoire dynamique, le contrôle des processus, la conversion de types et diverses autres fonctions utilitaires
-#include <ctype.h> // Cette bibliothèque standard du C est utilisée pour la classification et la transformation des caractères
-#include <string.h> // Cette bibliothèque standard du C est utilisée pour manipuler des chaînes de caractères et des blocs de mémoire
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <ctype.h> 
+#include <string.h> 
 
 #define MAX_EXPR_LENGTH 1024
 
-// Ici, on défini la structure que aura la pile
+// Structure de noeud pour la pile
 typedef struct Node {
     int data;
     struct Node *suivant;
@@ -15,7 +15,7 @@ typedef struct Node {
 void push(Node **sommet, int data) {
     Node *new_node = (Node *)malloc(sizeof(Node));
     if (!new_node) {
-        fprintf(stderr, "Erreur lors de l'allocation de la mémoire \n");
+        fprintf(stderr, "Erreur lors de l'allocation de la mémoire\n");
         exit(EXIT_FAILURE);
     }
     new_node->data = data;
@@ -26,10 +26,10 @@ void push(Node **sommet, int data) {
 // Fonction pour retirer un élément de la pile
 int pop(Node **sommet) {
     if (*sommet == NULL) {
-        fprintf(stderr, "Il y'a dépassement de la pile\n");
+        fprintf(stderr, "Il y a dépassement de la pile\n");
         exit(EXIT_FAILURE);
     }
-    Node *temp = *sommet; // temp est une variable de type Node * qui pointe vers la même valeur que celle pointée par *sommet
+    Node *temp = *sommet;
     int data = temp->data;
     *sommet = (*sommet)->suivant;
     free(temp);
@@ -110,21 +110,33 @@ int eval_with_priority(const char *expr) {
     return pop(&values);
 }
 
-int main() {
-    char expr[MAX_EXPR_LENGTH];
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "Utilisez: %s <nom_fichier>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
-    printf("Veuillez entrer une expression arithmétique s'il vous plaît: ");
-    scanf("%s", expr);
+    FILE *fichier = fopen(argv[1], "r");
+    if (!fichier) {
+        fprintf(stderr, "Erreur: Impossible d'ouvrir le fichier %s\n", argv[1]);
+        return EXIT_FAILURE;
+    }
 
-    printf("Evaluation avec aucune priorité: %d\n", eval_no_priority(expr));
-    printf("Evaluation avec priorité: %d\n", eval_with_priority(expr));
+    char ligne[MAX_EXPR_LENGTH];
+    while (fgets(ligne, sizeof(ligne), fichier)) {
+        ligne[strcspn(ligne, "\r\n")] = '\0';  // Supprimer les caractères de fin de ligne
 
+       // printf("Ligne lue : %s\n", ligne);
+
+        char *token = strtok(ligne, " ");
+        while (token != NULL) {
+            printf("Expression : %s\n", token);
+            printf("Evaluation avec aucune priorité : %d\n", eval_no_priority(token));
+            printf("Evaluation avec priorité : %d\n", eval_with_priority(token));
+            token = strtok(NULL, " ");
+        }
+    }
+
+    fclose(fichier);
     return 0;
 }
-
-
-/*
-    Commandes pour l'exécution de notre code
-    gcc -o exo8_9 exo8_9.c
-    ./exo8_9
-*/
